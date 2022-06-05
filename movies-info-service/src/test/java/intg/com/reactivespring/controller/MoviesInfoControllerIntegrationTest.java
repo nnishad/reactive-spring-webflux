@@ -29,7 +29,7 @@ class MoviesInfoControllerIntegrationTest {
     @Autowired
     WebTestClient webTestClient;
 
-    static private String MOVIE_INFO_URL="/v1/movieinfos";
+    static private String MOVIE_INFO_URL="/v1/movieinfos/";
 
     @BeforeEach
     void setUp() {
@@ -44,13 +44,8 @@ class MoviesInfoControllerIntegrationTest {
                 .blockLast();
     }
 
-    @AfterEach
-    void tearDown() {
-        movieInfoRepository.deleteAll().block();
-    }
-
     @Test
-    void addMovieInfo() {
+    void addMovieInfos() {
         var movieInfo=new MovieInfo(null, "Batman Begins123",
                 2005, List.of("Christian Bale", "Michael Cane"), LocalDate.parse("2005-06-15"));
 
@@ -67,6 +62,74 @@ class MoviesInfoControllerIntegrationTest {
                     assert  savedMovieInfo!=null;
                     assert  savedMovieInfo.getMovieInfoId()!=null;
                 })
+        ;
+    }
+
+    @AfterEach
+    void tearDown() {
+        movieInfoRepository.deleteAll().block();
+    }
+
+    @Test
+    void getAllMovieInfos() {
+        webTestClient.get()
+                .uri(MOVIE_INFO_URL)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(MovieInfo.class)
+                .hasSize(3);
+    }
+
+    @Test
+    void getMovieInfoById() {
+        var movieInfoId="abc";
+        webTestClient.get()
+                .uri(MOVIE_INFO_URL+"{id}",movieInfoId)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                /*.expectBody(MovieInfo.class)
+                .consumeWith(movieInfoEntityExchangeResult -> {
+                    var savedMovieInfo=movieInfoEntityExchangeResult.getResponseBody();
+                    assert savedMovieInfo!=null;
+                })*/
+                .expectBody()
+                .jsonPath("$.name")
+                .isEqualTo("Dark Knight Rises")
+                ;
+    }
+
+    @Test
+    void updateMovieInfos() {
+        var movieInfo=new MovieInfo(null, "Dark Knight Rises2",
+                2005, List.of("Christian Bale", "Michael Cane"), LocalDate.parse("2005-06-15"));
+        var movieInfoId="abc";
+
+        webTestClient.put()
+                .uri(MOVIE_INFO_URL+"{id}",movieInfoId)
+                .bodyValue(movieInfo)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBody(MovieInfo.class)
+                .consumeWith(movieInfoEntityExchangeResult -> {
+                    var updatedMovieInfo=movieInfoEntityExchangeResult.getResponseBody();
+                    assert  updatedMovieInfo!=null;
+                    assert  updatedMovieInfo.getMovieInfoId()!=null;
+                    assertEquals(updatedMovieInfo.getName(),movieInfo.getName());
+                })
+        ;
+    }
+
+    @Test
+    void deleteMovieInfoById() {
+        var movieInfoId="abc";
+        webTestClient.delete()
+                .uri(MOVIE_INFO_URL+"{id}",movieInfoId)
+                .exchange()
+                .expectStatus()
+                .isNoContent()
         ;
     }
 }
