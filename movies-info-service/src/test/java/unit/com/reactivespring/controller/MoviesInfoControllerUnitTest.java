@@ -126,7 +126,7 @@ public class MoviesInfoControllerUnitTest {
                 .consumeWith(result -> {
                     var error = result.getResponseBody();
                     assert  error!=null;
-                    String expectedErrorMessage = "movieInfo.name must be present,movieInfo.year must be positive";
+                    String expectedErrorMessage = "movieInfo.cast must be present,movieInfo.name must be present,movieInfo.year must be positive";
                     assertEquals(expectedErrorMessage, error);
 
                 });
