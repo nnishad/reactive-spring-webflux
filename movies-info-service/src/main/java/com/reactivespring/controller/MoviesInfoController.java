@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/v1")
 public class MoviesInfoController {
@@ -20,7 +22,7 @@ public class MoviesInfoController {
 
     @PostMapping("/movieinfos")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<MovieInfo> addMovieInfos(@RequestBody MovieInfo movieInfo){
+    public Mono<MovieInfo> addMovieInfos(@RequestBody @Valid MovieInfo movieInfo){
         return movieInfoService.addMovieInfo(movieInfo);
     }
 
@@ -37,7 +39,7 @@ public class MoviesInfoController {
     }
 
     @PutMapping("/movieinfos/{id}")
-    public Mono<MovieInfo> updateMovieInfo(@RequestBody MovieInfo updatedMovieInfo,@PathVariable String id){
+    public Mono<MovieInfo> updateMovieInfo(@RequestBody @Valid MovieInfo updatedMovieInfo, @PathVariable String id){
         return movieInfoService.updateMovieInfo(updatedMovieInfo,id);
     }
 

@@ -101,6 +101,41 @@ public class MoviesInfoControllerUnitTest {
     }
 
     @Test
+    void addNewMovieInfo_validation() {
+
+        var movieInfo = new MovieInfo(null, "",
+                -2005, List.of(""), LocalDate.parse("2005-06-15"));
+
+        webTestClient
+                .post()
+                .uri(MOVIE_INFO_URL)
+                .bodyValue(movieInfo)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                /*.expectBody(String.class)
+                .consumeWith(entityExchangeResult -> {
+                    var errorMessage = entityExchangeResult.getResponseBody();
+                    System.out.println("errorMessage : " + errorMessage);
+                    assert errorMessage!=null;
+                });*/
+                /*.expectBody()
+                .jsonPath("$.error").isEqualTo("Bad Request");*/
+
+                .expectBody(String.class)
+                .consumeWith(result -> {
+                    var error = result.getResponseBody();
+                    assert  error!=null;
+                    String expectedErrorMessage = "movieInfo.name must be present,movieInfo.year must be positive";
+                    assertEquals(expectedErrorMessage, error);
+
+                });
+    }
+
+
+
+
+    @Test
     void updateMovieInfo() {
         var id = "abc";
         var updatedMovieInfo = new MovieInfo("abc", "Dark Knight Rises 1",
@@ -122,6 +157,25 @@ public class MoviesInfoControllerUnitTest {
                     assert movieInfo != null;
                     assertEquals("Dark Knight Rises 1", movieInfo.getName());
                 });
+    }
+
+    @Test
+    void updateMovieInfo_notFound() {
+        var id = "abc1";
+        var updatedMovieInfo = new MovieInfo("abc", "Dark Knight Rises 1",
+                2013, List.of("Christian Bale1", "Tom Hardy1"), LocalDate.parse("2012-07-20"));
+
+        when(movieInfoService.updateMovieInfo(isA(MovieInfo.class), isA(String.class)))
+                .thenReturn(Mono.empty());
+
+
+        webTestClient
+                .put()
+                .uri(MOVIE_INFO_URL + "/{id}", id)
+                .bodyValue(updatedMovieInfo)
+                .exchange()
+                .expectStatus()
+                .isNotFound();
     }
 
     @Test
