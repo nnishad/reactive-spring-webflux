@@ -2,6 +2,7 @@ package com.reactivespring.handler;
 
 import com.reactivespring.domain.Review;
 import com.reactivespring.exception.ReviewDataException;
+import com.reactivespring.exception.ReviewNotFoundException;
 import com.reactivespring.repository.ReviewReactorRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,8 +76,8 @@ public class ReviewHandler {
     public Mono<ServerResponse> updateReview(ServerRequest serverRequest) {
 
         var reviewId=serverRequest.pathVariable("id");
-        var existingReview=reviewReactorRepository.findById(reviewId);
-
+        var existingReview=reviewReactorRepository.findById(reviewId)
+                .switchIfEmpty(Mono.error(new ReviewNotFoundException("Review not found for given review id")));
         return existingReview
                 .flatMap(review->serverRequest.bodyToMono(Review.class)
                         .map(review1 -> {
