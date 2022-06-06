@@ -51,4 +51,17 @@ public class ReviewsUnitTest {
 
     }
 
+    @Test
+    void addReview_validation(){
+        var review=new Review(null, null, "Awesome Movie", -9.0);
+        Mockito.when(reviewReactorRepository.save((isA(Review.class)))).thenReturn(Mono.just(new Review("abc", null, "Awesome Movie", -9.0)));
+        webTestClient.post()
+                .uri(Review_URL)
+                .bodyValue(review)
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+
+    }
+
 }
