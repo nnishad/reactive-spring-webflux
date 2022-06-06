@@ -33,4 +33,31 @@ public class ReviewHandler {
         var reviewsFlux= reviewReactorRepository.findAll();
         return  ServerResponse.ok().body(reviewsFlux,Review.class);
     }
+
+    public Mono<ServerResponse> updateReview(ServerRequest serverRequest) {
+
+        var reviewId=serverRequest.pathVariable("id");
+        var existingReview=reviewReactorRepository.findById(reviewId);
+
+        return existingReview
+                .flatMap(review->serverRequest.bodyToMono(Review.class)
+                        .map(review1 -> {
+                            review.setComment(review1.getComment());
+                            review.setRating(review1.getRating());
+                            return review;
+                        })
+                )
+                .flatMap(reviewReactorRepository::save)
+                .flatMap(ServerResponse.ok()::bodyValue);
+    }
+
+    public Mono<ServerResponse> deleteReview(ServerRequest serverRequest) {
+
+        var reviewId=serverRequest.pathVariable("id");
+        var existingReview=reviewReactorRepository.findById(reviewId);
+
+        return existingReview
+                .flatMap(review -> reviewReactorRepository.deleteById(reviewId))
+                .then(ServerResponse.status(HttpStatus.NO_CONTENT).build());
+    }
 }
